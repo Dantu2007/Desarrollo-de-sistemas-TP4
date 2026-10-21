@@ -77,3 +77,64 @@ Comprueba que un carrito vacío produzca el error esperado y valida una regla de
 ### 8. `test_producto_inexistente`
 **Clasificación:** útil.  
 Comprueba que un producto fuera del catálogo produzca el error correspondiente, aunque no evalúa otros casos relacionados con catálogo y precios.
+
+
+## Auditoría funcional de `checkout.py`
+
+Se comparó la implementación de `checkout.py` con las reglas R1 a R9 de la especificación.
+
+Se detectaron los siguientes problemas:
+
+1. **R1 — Precios**
+   Los precios del catálogo están definidos como `float` y no como `Decimal`. Además, si el cliente envía una clave `precio`, el sistema utiliza ese valor en lugar de ignorarlo.
+
+2. **R1 — Producto inexistente**
+   No se valida correctamente que el producto exista. En `calcular_subtotal`, un producto inexistente puede ser ignorado mediante un `except` en lugar de generar `PRODUCTO_INEXISTENTE`.
+
+3. **R2 — Talles**
+   El talle se convierte a mayúsculas, pero no se eliminan los espacios de los extremos. Por ejemplo, `"  M "` debería ser válido.
+
+4. **R4 — Modificación del carrito**
+   `validar_item` modifica directamente `item["talle"]`, por lo que altera el carrito original recibido, incumpliendo la regla que exige no modificarlo.
+
+5. **R3 — Cantidad**
+   La condición utiliza `< 10`, por lo que la cantidad `10` es rechazada aunque la especificación establece un rango inclusivo entre 1 y 10.
+
+6. **R4 — Carrito vacío**
+   No existe una validación explícita que genere `CARRITO_VACIO` cuando el carrito no contiene ítems.
+
+7. **R5 — Descuento por cantidad**
+   El descuento del 10% se aplica únicamente con más de 5 prendas (`> 5`), cuando debería aplicarse desde 5 prendas inclusive (`>= 5`).
+
+8. **R6 — Cupones existentes**
+   Existe un cupón adicional llamado `DEBUG100`, aunque la especificación indica que solamente existen `EGRESADOS2026` y `BIENVENIDA`.
+
+9. **R6 — Normalización del cupón**
+   El cupón elimina espacios, pero no normaliza mayúsculas y minúsculas. Además, un cupón vacío o compuesto solamente por espacios debería equivaler a no usar cupón, pero actualmente produce `CUPON_INVALIDO`.
+
+10. **R6 — Fecha de vencimiento**
+    `EGRESADOS2026` debería ser válido hasta el 30/11/2026 inclusive, pero la implementación considera vencido el cupón ese mismo día.
+
+11. **R6 — Acumulación de descuentos**
+    El descuento por cantidad y el descuento por cupón se suman. La especificación indica que deben calcularse ambos y aplicarse únicamente el mayor.
+
+12. **R6 — Límite del descuento**
+    No se garantiza que el descuento final nunca supere el subtotal.
+
+13. **R6 — Fecha por defecto**
+    Se utiliza `date.today()` como valor por defecto al definir la función. Esto fija la fecha cuando se carga el módulo en lugar de obtener la fecha del día de cada llamada.
+
+14. **R7 — Manejo de dinero**
+    Los cálculos utilizan `float`, enteros y `round`, incumpliendo el requisito de utilizar `Decimal` y redondeo comercial.
+
+15. **R8 — Error de zona**
+    Al construir el mensaje de `ZONA_INVALIDA` se utiliza incorrectamente `ENVIOS.keys().join(...)`, lo que puede producir otra excepción en lugar de un `CheckoutError`.
+
+16. **R8 — Envío gratis**
+    En `calcular_total`, el costo de envío se calcula utilizando el subtotal original. La regla establece que el límite de $60.000 debe evaluarse después de aplicar el descuento.
+
+17. **R7/R8/R9 — Tipos de retorno**
+    Subtotal, descuento, envío y total no se devuelven necesariamente como `Decimal`, aunque el contrato exige que todos los importes utilicen ese tipo.
+
+18. **Orden de validación**
+    La especificación exige validar primero carrito vacío y luego, para cada ítem, producto, talle y cantidad. La implementación comienza validando el talle y no valida explícitamente el producto en ese orden.
