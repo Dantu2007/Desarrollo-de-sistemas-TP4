@@ -100,7 +100,7 @@ def calcular_descuento(
         descuento += subtotal * Decimal("0.10")
 
     if cupon != None:
-        codigo = cupon.strip()
+        codigo = cupon.strip().upper()
 
         if codigo not in CUPONES:
             raise CheckoutError(
