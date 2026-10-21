@@ -110,6 +110,7 @@ def calcular_total(carrito, zona, cupon=None, fecha=date.today()):
     envio = calcular_envio(subtotal, zona)
     total = subtotal - descuento + envio
 
+
     resultado = {
         "subtotal": subtotal,
         "descuento": descuento,
