@@ -104,3 +104,60 @@ R2 no posee límites numéricos, ya que trabaja con un conjunto cerrado de talle
 
 - Entrada: `{"producto": "buzo", "talle": "M", "cantidad": 2.5}`
   - Resultado esperado: `CheckoutError` con código `CANTIDAD_INVALIDA`.
+
+## R4 — Carrito
+
+### Particiones válidas
+- Carrito con un solo ítem válido.
+- Carrito con varios ítems válidos.
+- El carrito debe conservar exactamente sus datos originales luego de llamar a las funciones.
+
+### Particiones inválidas
+- Lista vacía.
+- Cualquier situación en la que una función modifique el carrito recibido.
+
+### Valores límite
+- Cantidad mínima válida de ítems: 1.
+- Valor inmediatamente inferior al mínimo: 0 ítems.
+
+### Casos
+
+- Entrada: carrito con un único ítem válido.
+  - Resultado esperado: el carrito es aceptado.
+
+- Entrada: carrito con varios ítems válidos.
+  - Resultado esperado: el carrito es aceptado.
+
+- Entrada: `[]`
+  - Resultado esperado: `CheckoutError` con código `CARRITO_VACIO`.
+
+- Entrada: un carrito válido que se guarda antes de llamar a una función de checkout.
+  - Resultado esperado: luego de ejecutar la función, el carrito debe ser exactamente igual al original, sin claves modificadas, agregadas ni eliminadas.
+
+
+## R5 — Descuento por cantidad
+
+### Particiones válidas
+- Carrito cuya cantidad total de prendas sea menor a 5: no se aplica descuento por cantidad.
+- Carrito cuya cantidad total de prendas sea 5 o más: se aplica un 10% de descuento sobre el subtotal.
+
+### Particiones inválidas
+R5 no define entradas inválidas propias, ya que depende de cantidades previamente validadas por R3.
+
+### Valores límite
+- 4 prendas: no corresponde descuento.
+- 5 prendas: comienza a aplicarse el 10% de descuento.
+
+### Casos
+
+- Entrada: carrito con una cantidad total de 4 prendas.
+  - Resultado esperado: descuento por cantidad de `$0`.
+
+- Entrada: carrito con una cantidad total de 5 prendas.
+  - Resultado esperado: descuento del `10%` sobre el subtotal.
+
+- Entrada: carrito con una cantidad total de 6 prendas.
+  - Resultado esperado: descuento del `10%` sobre el subtotal.
+
+- Entrada: dos ítems con cantidades `2` y `3`.
+  - Resultado esperado: se suman las cantidades, dando un total de 5 prendas, por lo que corresponde un descuento del `10%`.
