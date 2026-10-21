@@ -228,3 +228,16 @@ Al ejecutar:
 el test falló porque el sistema devolvió un descuento de `0` en lugar de `1000.00`.
 
 La causa es que la implementación utiliza la condición `cantidad_prendas > 5`, por lo que el descuento recién se aplica a partir de 6 prendas. Según la especificación, debe aplicarse desde 5 prendas inclusive.
+
+
+## Falla detectada — R2: normalización del talle
+
+Se agregó un test para verificar que un talle con espacios alrededor, por ejemplo `"  M "`, sea aceptado como `M`.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_talle_con_espacios_es_valido`
+
+el test falló con `TALLE_INVALIDO`.
+
+La causa es que la implementación convierte el talle a mayúsculas, pero no elimina los espacios al inicio y al final antes de validarlo.

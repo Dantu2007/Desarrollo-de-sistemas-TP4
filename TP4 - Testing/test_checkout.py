@@ -40,3 +40,6 @@ def test_cinco_prendas_aplican_descuento():
     )
 
     assert descuento == Decimal("1000.00")
+
+def test_talle_con_espacios_es_valido():
+    validar_item(item(talle="  M "))
