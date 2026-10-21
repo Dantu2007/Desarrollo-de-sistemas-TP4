@@ -43,3 +43,12 @@ def test_cinco_prendas_aplican_descuento():
 
 def test_talle_con_espacios_es_valido():
     validar_item(item(talle="  M "))
+
+
+def test_validar_item_no_modifica_el_item():
+    datos = item(talle="m")
+    original = datos.copy()
+
+    validar_item(datos)
+
+    assert datos == original

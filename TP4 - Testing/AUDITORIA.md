@@ -241,3 +241,16 @@ Al ejecutar:
 el test falló con `TALLE_INVALIDO`.
 
 La causa es que la implementación convierte el talle a mayúsculas, pero no elimina los espacios al inicio y al final antes de validarlo.
+
+
+## Falla detectada — R4: modificación del carrito
+
+Se agregó un test para verificar que `validar_item` no modifique el ítem recibido.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_validar_item_no_modifica_el_item`
+
+el test falló porque el valor del talle fue modificado de `"m"` a `"M"` dentro del mismo diccionario.
+
+La causa es que la implementación normaliza el talle mediante una asignación directa sobre `item["talle"]`, alterando el objeto original recibido.
