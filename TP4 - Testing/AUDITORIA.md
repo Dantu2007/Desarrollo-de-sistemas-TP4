@@ -29,24 +29,7 @@ Entre los casos no detectados aparecen cambios relevantes en:
 Esto demuestra que los tests existentes verifican algunos comportamientos generales, pero no cubren correctamente varios valores límite ni operaciones críticas del negocio.
 
 
-## Auditoría estática con Ruff
-
-Se ejecutó el comando:
-
-`python -m ruff check checkout.py pedidos.py api.py`
-
-Ruff detectó 5 problemas en `checkout.py`:
-
-- Importación de `json` no utilizada.
-- Uso de un `except` genérico sin especificar la excepción.
-- Uso de `date.today()` como valor por defecto en un parámetro de función.
-- Comparación con `None` utilizando `!=` en lugar de `is not None`.
-- Segundo uso de `date.today()` como valor por defecto en otra función.
-
-Estos hallazgos corresponden principalmente a problemas de calidad, estilo y mantenibilidad del código. No reemplazan la revisión funcional, ya que existen errores de lógica que Ruff no puede detectar.
-
-
-## Sección 1 — Evaluación de los tests de la IA
+## Evaluación de los tests de la IA
 
 ### 1. `test_subtotal`
 **Clasificación:** útil.  
@@ -81,6 +64,22 @@ Comprueba que un carrito vacío produzca el error esperado y valida una regla de
 Comprueba que un producto fuera del catálogo produzca el error correspondiente, aunque no evalúa otros casos relacionados con catálogo y precios.
 
 ## Sección 2 — Hallazgos
+
+## Auditoría estática con Ruff
+
+Se ejecutó el comando:
+
+`python -m ruff check checkout.py pedidos.py api.py`
+
+Ruff detectó 5 problemas en `checkout.py`:
+
+- Importación de `json` no utilizada.
+- Uso de un `except` genérico sin especificar la excepción.
+- Uso de `date.today()` como valor por defecto en un parámetro de función.
+- Comparación con `None` utilizando `!=` en lugar de `is not None`.
+- Segundo uso de `date.today()` como valor por defecto en otra función.
+
+Estos hallazgos corresponden principalmente a problemas de calidad, estilo y mantenibilidad del código. No reemplazan la revisión funcional, ya que existen errores de lógica que Ruff no puede detectar.
 
 ## Auditoría funcional de `checkout.py`
 
