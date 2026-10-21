@@ -319,3 +319,15 @@ Al ejecutar:
 el test falló con el error `CUPON_INVALIDO`.
 
 La causa es que la implementación elimina los espacios mediante `strip()`, pero no normaliza el código a mayúsculas antes de compararlo con los cupones definidos.
+
+## Falla detectada — R6: cupón vacío
+
+Se agregó un test para verificar que un cupón vacío o compuesto únicamente por espacios sea tratado como ausencia de cupón.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_cupon_vacio_no_genera_error`
+
+el test falló con el error `CUPON_INVALIDO`.
+
+La causa es que, luego de normalizar el valor con `strip()`, el código vacío se intenta validar igualmente contra la tabla de cupones, en lugar de interpretarse como que no se ingresó ningún cupón.

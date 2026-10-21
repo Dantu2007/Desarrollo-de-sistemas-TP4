@@ -97,3 +97,13 @@ def test_cupon_acepta_minusculas_y_espacios():
     )
 
     assert descuento == Decimal("1500.00")
+
+def test_cupon_vacio_no_genera_error():
+    descuento = calcular_descuento(
+        Decimal("10000.00"),
+        1,
+        "   ",
+        date(2026, 11, 29),
+    )
+
+    assert descuento == Decimal("0.00")
