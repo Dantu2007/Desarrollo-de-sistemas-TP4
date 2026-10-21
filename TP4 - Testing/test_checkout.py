@@ -61,3 +61,9 @@ def test_producto_inexistente_lanza_error():
         calcular_subtotal,
         carrito,
     ) == "PRODUCTO_INEXISTENTE"
+
+def test_carrito_vacio_lanza_error():
+    assert codigo_de_error(
+        calcular_subtotal,
+        [],
+    ) == "CARRITO_VACIO"

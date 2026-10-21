@@ -267,3 +267,16 @@ Al ejecutar:
 el test falló porque no se lanzó ningún `CheckoutError`.
 
 La causa es que `calcular_subtotal` captura el error al buscar un producto inexistente y continúa con el siguiente ítem, ignorando silenciosamente el producto inválido en lugar de informar el error correspondiente.
+
+
+## Falla detectada — R4: carrito vacío
+
+Se agregó un test para verificar que un carrito vacío produzca el error `CARRITO_VACIO`.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_carrito_vacio_lanza_error`
+
+el test falló porque `calcular_subtotal([])` no lanzó ningún `CheckoutError`.
+
+La implementación actual devuelve un subtotal de cero para una lista vacía, en lugar de rechazarla según lo indicado por la especificación.
