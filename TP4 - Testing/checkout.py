@@ -11,9 +11,9 @@ class CheckoutError(Exception):
 
 
 CATALOGO = {
-    "buzo": 24999.90,
-    "remera": 11999.50,
-    "campera": 47999.99,
+    "buzo": Decimal(24999.90),
+    "remera": Decimal(11999.50),
+    "campera": Decimal(47999.99),
 }
 
 TALLES = ["XS", "S", "M", "L", "XL", "XXL"]
@@ -21,13 +21,13 @@ TALLES = ["XS", "S", "M", "L", "XL", "XXL"]
 CUPONES = {
     "EGRESADOS2026": {
         "tipo": "porcentaje",
-        "valor": Decimal(0.15),
+        "valor": Decimal("0.15"),
         "vence": date(2026, 11, 30),
     },
     "BIENVENIDA": {
         "tipo": "fijo",
-        "valor": Decimal(3000),
-        "minimo": Decimal(20000),
+        "valor": Decimal("3000.00"),
+        "minimo": Decimal("20000.00"),
     },
     "DEBUG100": {
         "tipo": "porcentaje",
@@ -37,10 +37,10 @@ CUPONES = {
 }
 
 ENVIOS = {
-    "CABA": 2500,
-    "GBA": 4000,
-    "INTERIOR": 6500,
-    "RETIRO": 0,
+    "CABA": Decimal("2500.00"),
+    "GBA": Decimal("4000.00"),
+    "INTERIOR": Decimal("6500.00"),
+    "RETIRO": Decimal("0.00"),
 }
 
 
@@ -67,7 +67,7 @@ def calcular_subtotal(carrito):
             "El carrito no puede estar vacío",
         )
 
-    subtotal = 0
+    subtotal = Decimal("0.00")
 
     for item in carrito:
         validar_item(item)
@@ -101,8 +101,10 @@ def calcular_descuento(
 
     if cupon != None:
         codigo = cupon.strip().upper()
+
         if codigo == "":
             return descuento
+
         if codigo not in CUPONES:
             raise CheckoutError(
                 "CUPON_INVALIDO",
@@ -138,11 +140,11 @@ def calcular_envio(subtotal, zona):
     if zona not in ENVIOS:
         raise CheckoutError(
             "ZONA_INVALIDA",
-            f"Zona inválida. Opciones: {ENVIOS.keys().join(', ')}",
+            f"Zona inválida. Opciones: {', '.join(ENVIOS.keys())}",
         )
 
     if subtotal >= 60000:
-        return 0
+        return Decimal("0.00")
 
     return ENVIOS[zona]
 
