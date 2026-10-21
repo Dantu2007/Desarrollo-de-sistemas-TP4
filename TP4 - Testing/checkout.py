@@ -45,7 +45,7 @@ ENVIOS = {
 
 
 def validar_item(item):
-    item["talle"] = item["talle"].upper()
+    item["talle"] = item["talle"].strip().upper()
 
     if item["talle"] not in TALLES:
         raise CheckoutError(
