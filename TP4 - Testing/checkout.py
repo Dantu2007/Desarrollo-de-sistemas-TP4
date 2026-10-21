@@ -66,13 +66,16 @@ def calcular_subtotal(carrito):
     for item in carrito:
         validar_item(item)
 
-        try:
-            precio = item.get(
-                "precio",
-                CATALOGO[item["producto"]],
+        if item["producto"] not in CATALOGO:
+            raise CheckoutError(
+                "PRODUCTO_INEXISTENTE",
+                f"Producto inexistente: {item['producto']}",
             )
-        except:
-            continue
+
+        precio = item.get(
+            "precio",
+            CATALOGO[item["producto"]],
+        )
 
         subtotal += precio * item["cantidad"]
 
