@@ -161,3 +161,116 @@ R5 no define entradas inválidas propias, ya que depende de cantidades previamen
 
 - Entrada: dos ítems con cantidades `2` y `3`.
   - Resultado esperado: se suman las cantidades, dando un total de 5 prendas, por lo que corresponde un descuento del `10%`.
+
+
+
+## R6 — Cupones
+
+### Particiones válidas
+- Sin cupón: `None`, `""` o solo espacios.
+- Cupón `EGRESADOS2026` dentro de su vigencia.
+- Cupón `BIENVENIDA` cuando el subtotal es de $20.000 o más.
+- Cupones escritos con distintas mayúsculas/minúsculas o con espacios alrededor.
+
+### Particiones inválidas
+- Código de cupón inexistente.
+- `EGRESADOS2026` usado después del 30/11/2026.
+- `BIENVENIDA` con subtotal menor a $20.000.
+
+### Valores límite
+- `EGRESADOS2026`:
+  - 30/11/2026: válido.
+  - 01/12/2026: vencido.
+- `BIENVENIDA`:
+  - Subtotal $20.000: válido.
+  - Subtotal menor a $20.000: inválido.
+- Si existe descuento por cantidad y por cupón, se aplica únicamente el mayor.
+
+### Casos
+
+- Entrada: cupón `None`.
+  - Resultado esperado: no se aplica descuento por cupón y no se produce error.
+
+- Entrada: cupón `" egresados2026 "` con fecha `30/11/2026`.
+  - Resultado esperado: se aplica un descuento del 15%.
+
+- Entrada: cupón `EGRESADOS2026` con fecha `01/12/2026`.
+  - Resultado esperado: `CheckoutError` con código `CUPON_VENCIDO`.
+
+- Entrada: cupón `BIENVENIDA` con subtotal de $20.000.
+  - Resultado esperado: se aplica un descuento fijo de $3.000.
+
+- Entrada: cupón `BIENVENIDA` con subtotal menor a $20.000.
+  - Resultado esperado: `CheckoutError` con código `CUPON_MINIMO_NO_ALCANZADO`.
+
+- Entrada: cupón `DESCUENTO50`.
+  - Resultado esperado: `CheckoutError` con código `CUPON_INVALIDO`.
+
+- Entrada: compra con descuento por cantidad del 10% y cupón que genera un descuento mayor.
+  - Resultado esperado: se aplica solamente el descuento mayor, sin acumular ambos.
+
+
+## R7 — Dinero y redondeo
+
+### Particiones válidas
+- Todos los importes deben manejarse utilizando `Decimal`.
+- Los descuentos porcentuales deben redondearse a dos decimales mediante redondeo comercial.
+
+### Particiones inválidas
+- Uso de valores `float` para representar importes.
+- Resultados monetarios que no estén redondeados correctamente al centavo.
+
+### Valores límite
+- Los casos en que el cálculo genera medio centavo deben redondearse hacia arriba.
+
+### Casos
+
+- Entrada: 15% de `Decimal("11999.50")`.
+  - Resultado esperado: `Decimal("1799.93")`.
+
+- Entrada: cualquier cálculo de subtotal, descuento, envío o total.
+  - Resultado esperado: el resultado debe ser de tipo `Decimal` y no `float`.
+
+- Entrada: cálculo porcentual cuyo tercer decimal sea 5.
+  - Resultado esperado: el valor se redondea hacia arriba al centavo.
+
+
+## R8 — Envío
+
+### Particiones válidas
+- Zona `CABA`: costo $2.500.
+- Zona `GBA`: costo $4.000.
+- Zona `INTERIOR`: costo $6.500.
+- Zona `RETIRO`: costo $0.
+- Zonas escritas en minúscula o con espacios alrededor.
+- Compra cuyo subtotal después del descuento sea de $60.000 o más: envío gratis.
+
+### Particiones inválidas
+- Cualquier zona que no pertenezca a las cuatro zonas permitidas.
+
+### Valores límite
+- Subtotal con descuento de $59.999,99: corresponde cobrar envío.
+- Subtotal con descuento de $60.000: envío gratis.
+
+### Casos
+
+- Entrada: zona `CABA` y subtotal con descuento menor a $60.000.
+  - Resultado esperado: envío de $2.500.
+
+- Entrada: zona `" gba "` y subtotal con descuento menor a $60.000.
+  - Resultado esperado: envío de $4.000.
+
+- Entrada: zona `INTERIOR` y subtotal con descuento menor a $60.000.
+  - Resultado esperado: envío de $6.500.
+
+- Entrada: zona `RETIRO`.
+  - Resultado esperado: envío de $0.
+
+- Entrada: zona `CABA` y subtotal con descuento exactamente igual a $60.000.
+  - Resultado esperado: envío gratis.
+
+- Entrada: zona `CABA` y subtotal con descuento de $59.999,99.
+  - Resultado esperado: envío de $2.500.
+
+- Entrada: zona `ROSARIO`.
+  - Resultado esperado: `CheckoutError` con código `ZONA_INVALIDA`.
