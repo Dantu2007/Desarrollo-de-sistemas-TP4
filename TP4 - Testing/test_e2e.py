@@ -41,3 +41,59 @@ def test_una_ruta_inexistente_devuelve_404(url):
     status, cuerpo = pedir(url, "GET", "/api/v1/otra")
     assert status == 404
     assert cuerpo["error"]["code"] == "RUTA_INEXISTENTE"
+
+def test_json_invalido_devuelve_400(url):
+    status, cuerpo = pedir(
+        url,
+        "POST",
+        RUTA,
+        crudo=b"{json roto",
+    )
+
+    assert status == 400
+    assert cuerpo["error"]["code"] == "JSON_INVALIDO"
+
+
+def test_datos_incompletos_devuelve_400(url):
+    cuerpo_incompleto = {
+        "email": "ana@mail.com",
+        "carrito": [
+            {
+                "producto": "buzo",
+                "talle": "M",
+                "cantidad": 1,
+            }
+        ],
+    }
+
+    status, cuerpo = pedir(
+        url,
+        "POST",
+        RUTA,
+        cuerpo=cuerpo_incompleto,
+    )
+
+    assert status == 400
+    assert cuerpo["error"]["code"] == "DATOS_INCOMPLETOS"
+
+
+def test_error_de_checkout_devuelve_422(url):
+    cuerpo_invalido = compra(
+        carrito=[
+            {
+                "producto": "buzo",
+                "talle": "XXXL",
+                "cantidad": 1,
+            }
+        ]
+    )
+
+    status, cuerpo = pedir(
+        url,
+        "POST",
+        RUTA,
+        cuerpo=cuerpo_invalido,
+    )
+
+    assert status == 422
+    assert cuerpo["error"]["code"] == "TALLE_INVALIDO"

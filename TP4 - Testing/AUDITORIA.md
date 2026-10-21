@@ -357,3 +357,35 @@ El test `test_precio_enviado_por_cliente_se_ignora` verificó que el precio unit
 El resultado recuperado fue `1` en lugar de `24999.90`.
 
 Esto demuestra que `pedidos.py` permite que un precio enviado por el cliente termine persistido, incumpliendo la regla que exige utilizar siempre el precio oficial del catálogo.
+
+## Fallos detectados en E2E — R11
+
+### JSON inválido devuelve status incorrecto
+
+El test `test_json_invalido_devuelve_400` verificó que un cuerpo que no contiene JSON válido responda con status `400` y código `JSON_INVALIDO`.
+
+El test falló porque la API respondió con status `500`.
+
+Esto demuestra que el error de JSON inválido no está siendo manejado como un error controlado de entrada.
+
+### Datos incompletos devuelven status incorrecto
+
+El test `test_datos_incompletos_devuelve_400` verificó que la ausencia de un campo obligatorio produzca status `400` y código `DATOS_INCOMPLETOS`.
+
+El test falló porque la API respondió con status `500`.
+
+Esto demuestra que la validación de datos obligatorios no está siendo manejada correctamente antes de procesar el pedido.
+
+### CheckoutError devuelve status incorrecto
+
+El test `test_error_de_checkout_devuelve_422` verificó que un error de negocio, en este caso un talle inválido, responda con status `422` preservando el código `TALLE_INVALIDO`.
+
+El test falló porque la API respondió con status `500`.
+
+Esto demuestra que los `CheckoutError` no están siendo traducidos correctamente a respuestas HTTP controladas.
+
+### Ruta inexistente
+
+El test correspondiente a una ruta inexistente pasó correctamente.
+
+Esto confirma que, para este caso, la API responde de acuerdo con el comportamiento esperado por la especificación.
