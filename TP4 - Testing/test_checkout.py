@@ -31,3 +31,12 @@ def test_cantidad_cero_es_invalida():
 
 def test_cantidad_diez_es_valida():
     validar_item(item(cantidad=10))
+
+
+def test_cinco_prendas_aplican_descuento():
+    descuento = calcular_descuento(
+        Decimal("10000.00"),
+        5,
+    )
+
+    assert descuento == Decimal("1000.00")

@@ -215,3 +215,16 @@ La causa es que la validación actual utiliza la condición:
 `1 <= cantidad < 10`
 
 por lo que el valor 10 queda excluido incorrectamente.
+
+
+## Falla detectada — R5: descuento desde 5 prendas
+
+Se agregó un test para verificar que una compra de exactamente 5 prendas reciba el 10% de descuento por cantidad.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_cinco_prendas_aplican_descuento`
+
+el test falló porque el sistema devolvió un descuento de `0` en lugar de `1000.00`.
+
+La causa es que la implementación utiliza la condición `cantidad_prendas > 5`, por lo que el descuento recién se aplica a partir de 6 prendas. Según la especificación, debe aplicarse desde 5 prendas inclusive.
