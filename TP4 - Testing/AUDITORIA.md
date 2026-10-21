@@ -389,3 +389,60 @@ Esto demuestra que los `CheckoutError` no están siendo traducidos correctamente
 El test correspondiente a una ruta inexistente pasó correctamente.
 
 Esto confirma que, para este caso, la API responde de acuerdo con el comportamiento esperado por la especificación.
+
+
+## Tabla final de hallazgos
+
+| Severidad | Archivo / línea original | Categoría | Regla | Hallazgo | Cómo se encontró |
+|---|---|---|---|---|---|
+| Alta | `pedidos.py:39-50` | efectos laterales | R10 | Se hace commit del pedido antes de calcular el checkout; si falla, queda persistido parcialmente. | Revisión + test de integración |
+| Alta | `pedidos.py:63-71` | efectos laterales | R10 | No se hace commit después de guardar los ítems y montos. Otra conexión puede ver el pedido incompleto. | Revisión + test de integración |
+| Alta | `pedidos.py:64-68` | seguridad / lógica | R10 | Se acepta y persiste el precio enviado por el cliente en lugar del precio del catálogo. | Revisión + test de integración |
+| Alta | `pedidos.py:104-108` | seguridad | R10 | `pedidos_de` concatena el email directamente en SQL mediante un f-string. | Revisión manual |
+| Alta | `api.py:30-54` | manejo de errores | R11 | Cualquier excepción durante POST se convierte en HTTP 500. | Revisión + E2E |
+| Alta | `api.py:32` | manejo de errores | R11 | JSON inválido devuelve HTTP 500 en lugar de `400 / JSON_INVALIDO`. | Test E2E |
+| Alta | `api.py:37-41` | manejo de errores | R11 | Datos obligatorios faltantes terminan como HTTP 500 en lugar de `400 / DATOS_INCOMPLETOS`. | Test E2E |
+| Alta | `api.py:35-42,53-54` | manejo de errores | R11 | Un `CheckoutError` se transforma en HTTP 500 en lugar de conservar el código y responder 422. | Test E2E |
+| Alta | `checkout.py:49` | lógica / seguridad | R1 | El precio enviado por el cliente puede reemplazar al precio oficial del catálogo. | Revisión manual |
+| Alta | `checkout.py:60-61` | lógica y límites | R5 | El descuento se aplica con más de 5 prendas y no desde 5 inclusive. | Mutation testing + TDD |
+| Alta | `checkout.py:61,74,82` | numéricos | R7 | Se mezclan `float` y valores monetarios, incumpliendo el uso de `Decimal`. | Revisión + tests |
+| Alta | `checkout.py:109-111` | lógica | R6/R9 | Los descuentos por cantidad y cupón pueden acumularse en lugar de elegir únicamente el mayor. | Revisión manual |
+| Alta | `checkout.py:110` | lógica y límites | R8 | El envío gratis se calcula usando el subtotal anterior al descuento. | Revisión manual |
+| Media | `checkout.py:40` | lógica y límites | R3 | La cantidad 10 era rechazada por utilizar `< 10`. | Mutation testing + TDD |
+| Media | `checkout.py:44-54` | lógica | R4 | Un carrito vacío devolvía subtotal 0 en vez de `CARRITO_VACIO`. | TDD |
+| Media | `checkout.py:48-51` | manejo de errores | R1 | Un producto inexistente era ignorado mediante `except/continue`. | Revisión + TDD |
+| Media | `checkout.py:35` | strings | R2 | No se eliminaban espacios alrededor del talle. | TDD |
+| Media | `checkout.py:35` | efectos laterales | R4 | La validación modificaba el talle dentro del objeto original. | TDD |
+| Media | `checkout.py:23` | alucinación | R6 | Existe un cupón `DEBUG100` que no figura en la especificación. | Revisión manual |
+| Media | `checkout.py:64` | strings | R6 | El cupón no se normalizaba a mayúsculas. | TDD |
+| Media | `checkout.py:64-67` | strings / manejo de errores | R6 | Un cupón vacío o con espacios se interpretaba como cupón inválido. | TDD |
+| Media | `checkout.py:72` | fechas / límites | R6 | `EGRESADOS2026` se consideraba vencido el mismo 30/11/2026. | Mutation testing + TDD |
+| Media | `checkout.py:84` | numéricos | R7 | No se aplicaba de forma consistente el redondeo monetario requerido con `Decimal`. | Revisión manual |
+| Media | `checkout.py:90-94` | manejo de errores | R8 | Una zona inválida provocaba `AttributeError` por uso incorrecto de `join`. | Test unitario |
+| Media | `checkout.py:12-16,26-30` | tipos | R7 | Catálogo y envíos estaban definidos con `float`/enteros en lugar de `Decimal`. | Revisión + tests |
+| Media | `checkout.py:113-118` | tipos | R7/R9 | Los valores devueltos no estaban garantizados como `Decimal`. | Revisión manual |
+| Media | `pedidos.py:12-23` | tipos / numéricos | R10 | Los montos de SQLite se almacenan como `REAL`. | Revisión manual |
+| Media | `pedidos.py:55-58` | numéricos | R10 | Los `Decimal` se convierten a `float` antes de persistirlos. | Revisión manual |
+| Media | `pedidos.py:88-97` | numéricos | R10 | Se construyen `Decimal` directamente desde valores `float` recuperados. | Revisión manual |
+| Media | `api.py:18` | tipos | R11 | `json.dumps(..., default=float)` convierte importes a números JSON en vez de texto. | Revisión manual |
+| Media | `api.py:62-68` | manejo de errores | R11 | Un pedido inexistente no se transforma explícitamente en `404 / PEDIDO_INEXISTENTE`. | Revisión manual |
+| Baja | `checkout.py:57,102` | code smell / fechas | R6 | `date.today()` se evalúa como argumento por defecto al cargar el módulo. | Ruff |
+| Baja | `checkout.py:63` | code smell | — | Se compara con `None` mediante `!=` en vez de `is not None`. | Ruff |
+| Baja | `checkout.py:50` | code smell / manejo de errores | R1 | Se utilizaba un `except` genérico. | Ruff |
+| Baja | `checkout.py:1` | code smell | — | Importación de `json` sin utilizar. | Ruff |
+| Baja | `checkout.py:34-41` | lógica | R1-R3 | El orden de validación no seguía producto → talle → cantidad indicado por la especificación. | Revisión manual |
+
+### Resumen de resultados de pruebas
+
+- Suite provista por la IA: mutation score **58,6%**.
+- Suite unitaria desarrollada: **19 tests**.
+- Cobertura de `checkout.py`: **97%**.
+- Mutation score final: **86,7%**.
+- Tests de integración: **4**, de los cuales **3 demostraron fallas** del código recibido.
+- Tests E2E: **4**, de los cuales **3 demostraron fallas** del código recibido.
+
+
+### Cobertura alta no implica buenos tests
+
+Que una suite ejecute cerca del 80% del código no significa que compruebe correctamente su comportamiento. La cobertura indica qué líneas o ramas fueron ejecutadas, pero no si las aserciones fueron suficientemente precisas para detectar resultados incorrectos. En este TP, los ocho tests de la IA pasaban, pero el mutation testing obtuvo solamente 58,6%, con 12 mutantes sobrevivientes. Por ejemplo, cambios en el límite de cantidad, el descuento desde cinco prendas y el cálculo del total no eran detectados. Esto demuestra que varios tests recorrían el código, pero realizaban comprobaciones demasiado débiles o no cubrían valores límite relevantes.
+
