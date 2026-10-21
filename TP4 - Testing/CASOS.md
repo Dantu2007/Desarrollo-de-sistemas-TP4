@@ -33,29 +33,74 @@ R1 no posee límites numéricos, ya que trabaja con un conjunto cerrado de produ
 ## R2 — Talles válidos
 
 ### Particiones válidas
+- Talle `XS`.
 - Talle `S`.
 - Talle `M`.
 - Talle `L`.
 - Talle `XL`.
+- Talle `XXL`.
+- Talles escritos en minúscula, por ejemplo `m`.
+- Talles con espacios al principio o al final, por ejemplo `"  M "`.
 
 ### Particiones inválidas
-- Cualquier talle que no pertenezca al conjunto permitido.
-- Valores en minúscula si la especificación exige coincidencia exacta.
-- Valores vacíos o nulos.
+- Cualquier talle que no pertenezca al conjunto permitido luego de normalizarlo.
+- Valores vacíos.
+- Valores nulos.
 
 ### Valores límite
-R2 no posee límites numéricos, ya que trabaja con un conjunto cerrado de valores válidos.
+R2 no posee límites numéricos, ya que trabaja con un conjunto cerrado de talles válidos.
 
 ### Casos
 
-- Entrada: `{"producto": "buzo", "talle": "S", "cantidad": 1}`
-  - Resultado esperado: el ítem es válido respecto del talle.
-
-- Entrada: `{"producto": "buzo", "talle": "XL", "cantidad": 1}`
+- Entrada: `{"producto": "buzo", "talle": "XS", "cantidad": 1}`
   - Resultado esperado: el ítem es válido respecto del talle.
 
 - Entrada: `{"producto": "buzo", "talle": "XXL", "cantidad": 1}`
+  - Resultado esperado: el ítem es válido respecto del talle.
+
+- Entrada: `{"producto": "buzo", "talle": "m", "cantidad": 1}`
+  - Resultado esperado: el talle se acepta como `M`.
+
+- Entrada: `{"producto": "buzo", "talle": "  M ", "cantidad": 1}`
+  - Resultado esperado: el talle se acepta como `M`.
+
+- Entrada: `{"producto": "buzo", "talle": "XXXL", "cantidad": 1}`
   - Resultado esperado: `CheckoutError` con código `TALLE_INVALIDO`.
 
 - Entrada: `{"producto": "buzo", "talle": "", "cantidad": 1}`
   - Resultado esperado: `CheckoutError` con código `TALLE_INVALIDO`.
+
+
+## R3 — Cantidad
+
+### Particiones válidas
+- Números enteros entre 1 y 10 inclusive.
+
+### Particiones inválidas
+- 0.
+- Números negativos.
+- Números mayores a 10.
+- Números decimales.
+- Texto u otros valores que no sean enteros.
+
+### Valores límite
+- Límite inferior válido: 1.
+- Límite superior válido: 10.
+- Valores inmediatamente fuera de los límites: 0 y 11.
+
+### Casos
+
+- Entrada: `{"producto": "buzo", "talle": "M", "cantidad": 1}`
+  - Resultado esperado: el ítem es válido respecto de la cantidad.
+
+- Entrada: `{"producto": "buzo", "talle": "M", "cantidad": 10}`
+  - Resultado esperado: el ítem es válido respecto de la cantidad.
+
+- Entrada: `{"producto": "buzo", "talle": "M", "cantidad": 0}`
+  - Resultado esperado: `CheckoutError` con código `CANTIDAD_INVALIDA`.
+
+- Entrada: `{"producto": "buzo", "talle": "M", "cantidad": 11}`
+  - Resultado esperado: `CheckoutError` con código `CANTIDAD_INVALIDA`.
+
+- Entrada: `{"producto": "buzo", "talle": "M", "cantidad": 2.5}`
+  - Resultado esperado: `CheckoutError` con código `CANTIDAD_INVALIDA`.
