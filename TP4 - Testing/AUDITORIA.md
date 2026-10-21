@@ -198,3 +198,20 @@ Se detectaron los siguientes problemas:
 
 8. **Errores controlados con status 500**
    Los errores contemplados por la especificación nunca deberían provocar un status 500. La implementación actual contiene caminos de ejecución que pueden terminar como errores internos del servidor en vez de respuestas controladas.
+
+
+## Falla detectada — R3: cantidad máxima
+
+Se agregó un test para verificar que una cantidad de `10` unidades sea aceptada, ya que la especificación establece un rango válido de 1 a 10 inclusive.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_cantidad_diez_es_valida`
+
+el test falló con el error `CANTIDAD_INVALIDA`.
+
+La causa es que la validación actual utiliza la condición:
+
+`1 <= cantidad < 10`
+
+por lo que el valor 10 queda excluido incorrectamente.
