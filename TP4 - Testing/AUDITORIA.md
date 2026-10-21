@@ -254,3 +254,16 @@ Al ejecutar:
 el test falló porque el valor del talle fue modificado de `"m"` a `"M"` dentro del mismo diccionario.
 
 La causa es que la implementación normaliza el talle mediante una asignación directa sobre `item["talle"]`, alterando el objeto original recibido.
+
+
+## Falla detectada — R1: producto inexistente
+
+Se agregó un test para verificar que un producto que no pertenece al catálogo genere el error `PRODUCTO_INEXISTENTE`.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_producto_inexistente_lanza_error`
+
+el test falló porque no se lanzó ningún `CheckoutError`.
+
+La causa es que `calcular_subtotal` captura el error al buscar un producto inexistente y continúa con el siguiente ítem, ignorando silenciosamente el producto inválido en lugar de informar el error correspondiente.

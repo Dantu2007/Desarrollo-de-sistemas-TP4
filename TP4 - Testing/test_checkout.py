@@ -52,3 +52,12 @@ def test_validar_item_no_modifica_el_item():
     validar_item(datos)
 
     assert datos == original
+
+
+def test_producto_inexistente_lanza_error():
+    carrito = [item(producto="gorra")]
+
+    assert codigo_de_error(
+        calcular_subtotal,
+        carrito,
+    ) == "PRODUCTO_INEXISTENTE"
