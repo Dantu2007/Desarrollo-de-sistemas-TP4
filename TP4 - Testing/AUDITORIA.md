@@ -307,3 +307,15 @@ Al ejecutar:
 el test falló con el error `CUPON_VENCIDO`.
 
 La causa es que la implementación utiliza una comparación estricta que exige que la fecha sea anterior al vencimiento, excluyendo incorrectamente el propio día 30/11/2026.
+
+## Falla detectada — R6: normalización del cupón
+
+Se agregó un test para verificar que los códigos de cupón sean aceptados aunque se ingresen con espacios alrededor y en minúsculas.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_cupon_acepta_minusculas_y_espacios`
+
+el test falló con el error `CUPON_INVALIDO`.
+
+La causa es que la implementación elimina los espacios mediante `strip()`, pero no normaliza el código a mayúsculas antes de compararlo con los cupones definidos.
