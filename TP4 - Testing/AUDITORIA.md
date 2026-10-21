@@ -280,3 +280,16 @@ Al ejecutar:
 el test falló porque `calcular_subtotal([])` no lanzó ningún `CheckoutError`.
 
 La implementación actual devuelve un subtotal de cero para una lista vacía, en lugar de rechazarla según lo indicado por la especificación.
+
+
+## Falla detectada — R7: cálculo de cupón con Decimal
+
+Se agregó un test para verificar que el cupón `EGRESADOS2026` aplique correctamente un descuento del 15%.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_cupon_egresados_aplica_15_por_ciento`
+
+el test falló con un `TypeError` porque el cálculo intenta multiplicar un valor `Decimal` por un `float`.
+
+La especificación exige que todos los importes monetarios se manejen utilizando `Decimal`, por lo que los porcentajes de los cupones también deben ser compatibles con ese tipo.
