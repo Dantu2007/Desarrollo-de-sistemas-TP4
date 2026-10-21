@@ -138,3 +138,32 @@ Se detectaron los siguientes problemas:
 
 18. **Orden de validación**
     La especificación exige validar primero carrito vacío y luego, para cada ítem, producto, talle y cantidad. La implementación comienza validando el talle y no valida explícitamente el producto en ese orden.
+
+
+
+## Auditoría funcional de `pedidos.py`
+
+Se comparó `pedidos.py` con las reglas de persistencia R10.
+
+Se detectaron los siguientes problemas:
+
+1. **Persistencia parcial ante errores**
+   El pedido se inserta y se hace `commit()` antes de llamar a `calcular_total`. Si el checkout produce un `CheckoutError`, puede quedar un pedido guardado parcialmente, incumpliendo la regla de atomicidad.
+
+2. **Falta de commit final**
+   Después de actualizar los importes e insertar los ítems no se realiza un `commit()`. Por lo tanto, otra conexión puede no ver inmediatamente el pedido completo.
+
+3. **Pérdida de precisión monetaria**
+   Los valores `Decimal` calculados por checkout se convierten a `float` antes de almacenarse en SQLite. Esto puede producir pérdida de precisión.
+
+4. **Recuperación incorrecta de montos**
+   `obtener_pedido` construye `Decimal` directamente desde valores `float`, lo que puede generar valores distintos a los calculados originalmente por checkout.
+
+5. **Precio unitario manipulable**
+   Al guardar los ítems se utiliza `item.get("precio", CATALOGO[...])`. Si el cliente envía un precio propio, ese valor puede terminar almacenado en lugar del precio oficial del catálogo.
+
+6. **Consulta vulnerable en `pedidos_de`**
+   El email se inserta directamente dentro de la consulta SQL mediante un f-string. Esto incumple la regla que indica que el email debe tratarse únicamente como dato y abre la posibilidad de modificar la consulta mediante SQL injection.
+
+7. **Falta de transacción única**
+   La operación completa de guardar pedido, importes e ítems no está contenida en una única transacción atómica, por lo que pueden quedar datos inconsistentes ante una falla intermedia.
