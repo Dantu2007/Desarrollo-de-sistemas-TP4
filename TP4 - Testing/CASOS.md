@@ -274,3 +274,146 @@ R5 no define entradas inválidas propias, ya que depende de cantidades previamen
 
 - Entrada: zona `ROSARIO`.
   - Resultado esperado: `CheckoutError` con código `ZONA_INVALIDA`.
+
+  ## R9 — Total
+
+### Particiones válidas
+- Compra sin descuento y con envío.
+- Compra con descuento y con envío.
+- Compra con envío gratis.
+- Compra con retiro, donde el envío es $0.
+
+### Particiones inválidas
+R9 no define entradas inválidas propias, porque usa valores ya validados por las reglas anteriores.
+
+### Valores límite
+- Casos donde el subtotal con descuento queda justo por debajo de $60.000.
+- Casos donde el subtotal con descuento queda exactamente en $60.000 y el envío pasa a ser gratis.
+
+### Casos
+
+- Entrada:
+  - subtotal: $49.999,80
+  - descuento: $0
+  - envío: $2.500
+  - Resultado esperado: total = $52.499,80.
+
+- Entrada:
+  - subtotal: $100.000
+  - descuento: $10.000
+  - envío: $0
+  - Resultado esperado: total = $90.000.
+
+- Entrada:
+  - subtotal: $50.000
+  - descuento: $5.000
+  - envío: $4.000
+  - Resultado esperado: total = $49.000.
+
+
+## R10 — Persistencia de pedidos
+
+### Particiones válidas
+- Guardar un pedido válido.
+- Consultar un pedido existente.
+- Consultar un pedido inexistente.
+- Buscar pedidos por email.
+- Guardar datos que requieren normalización.
+- Consultar la base desde otra conexión.
+
+### Particiones inválidas
+- Intentar guardar un pedido cuyo checkout produce un `CheckoutError`.
+- Datos enviados por el usuario que intenten alterar una consulta mediante el campo email.
+
+### Valores límite
+R10 no tiene límites numéricos principales, pero sí casos críticos de persistencia y consistencia entre conexiones.
+
+### Casos
+
+- Entrada: guardar un pedido válido.
+  - Resultado esperado: se guarda el pedido junto con todos sus ítems y se devuelve su id.
+
+- Entrada: guardar un pedido inválido que produce un `CheckoutError`.
+  - Resultado esperado: el error se propaga y no queda guardado ni el pedido ni ninguno de sus ítems.
+
+- Entrada: guardar un pedido y luego consultarlo desde otra conexión a la misma base.
+  - Resultado esperado: el pedido completo debe estar disponible.
+
+- Entrada: consultar un pedido con un id inexistente.
+  - Resultado esperado: `None`.
+
+- Entrada: guardar email `"  ANA@MAIL.COM  "`.
+  - Resultado esperado: se guarda como `"ana@mail.com"`.
+
+- Entrada: guardar zona `" caba "`, talle `" m "` y cupón `" egresados2026 "`.
+  - Resultado esperado: se guardan normalizados como `CABA`, `M` y `EGRESADOS2026`.
+
+- Entrada: guardar un ítem que trae un `precio` propio.
+  - Resultado esperado: `precio_unitario` se guarda usando el precio del catálogo y no el enviado por el cliente.
+
+- Entrada: consultar `pedidos_de` con el mismo email usando distintas mayúsculas o espacios.
+  - Resultado esperado: devuelve los mismos pedidos.
+
+- Entrada: varios pedidos del mismo email.
+  - Resultado esperado: se devuelven del más reciente al más antiguo.
+
+- Entrada: email con contenido que pudiera alterar una consulta SQL.
+  - Resultado esperado: se interpreta únicamente como un dato y no modifica la consulta.
+
+
+## R11 — API HTTP
+
+### Particiones válidas
+- Crear un pedido válido mediante `POST /api/v1/pedidos`.
+- Consultar un pedido existente mediante `GET /api/v1/pedidos/{id}`.
+- Crear un pedido sin cupón ni fecha.
+- Crear un pedido con cupón y fecha válidos.
+
+### Particiones inválidas
+- Cuerpo que no sea JSON válido.
+- Falta de `email`, `zona` o `carrito`.
+- Campos obligatorios con tipos incorrectos.
+- Fecha con formato inválido.
+- Datos que produzcan un `CheckoutError`.
+- Consultar un pedido inexistente.
+- Acceder a una ruta inexistente.
+
+### Valores límite
+- Fecha válida con formato exacto `AAAA-MM-DD`.
+- Cupón `EGRESADOS2026` usado el 30/11/2026: válido.
+- Cupón `EGRESADOS2026` usado el 01/12/2026: error de negocio.
+
+### Casos
+
+- Entrada: `POST /api/v1/pedidos` con un pedido válido.
+  - Resultado esperado: status `201 Created` y respuesta con `id`, `subtotal`, `descuento`, `envio` y `total`.
+
+- Entrada: `GET /api/v1/pedidos/{id}` con un id existente.
+  - Resultado esperado: status `200` y el pedido completo.
+
+- Entrada: pedido válido.
+  - Resultado esperado: todos los montos de la respuesta JSON viajan como texto y no como números JSON.
+
+- Entrada: cuerpo que no sea JSON válido.
+  - Resultado esperado: status `400` y código `JSON_INVALIDO`.
+
+- Entrada: falta `email`, `zona` o `carrito`, o alguno tiene un tipo incorrecto.
+  - Resultado esperado: status `400` y código `DATOS_INCOMPLETOS`.
+
+- Entrada: fecha con formato distinto de `AAAA-MM-DD`.
+  - Resultado esperado: status `400` y código `FECHA_INVALIDA`.
+
+- Entrada: pedido con talle inválido.
+  - Resultado esperado: status `422` y código `TALLE_INVALIDO`.
+
+- Entrada: cualquier otro `CheckoutError`.
+  - Resultado esperado: status `422` y se conserva el `code` original del error.
+
+- Entrada: `GET` de un pedido inexistente.
+  - Resultado esperado: status `404` y código `PEDIDO_INEXISTENTE`.
+
+- Entrada: acceder a una ruta inexistente.
+  - Resultado esperado: status `404` y código `RUTA_INEXISTENTE`.
+
+- Entrada: cualquier error controlado por la especificación.
+  - Resultado esperado: nunca debe responder con status `500`.
