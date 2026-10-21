@@ -331,3 +331,29 @@ Al ejecutar:
 el test falló con el error `CUPON_INVALIDO`.
 
 La causa es que, luego de normalizar el valor con `strip()`, el código vacío se intenta validar igualmente contra la tabla de cupones, en lugar de interpretarse como que no se ingresó ningún cupón.
+
+## Fallos detectados en integración — R10
+
+### Persistencia parcial ante error de checkout
+
+El test `test_si_checkout_falla_no_queda_pedido_guardado` verificó que un pedido inválido no deje registros persistidos.
+
+El test falló porque, luego de producirse un `CheckoutError`, quedó un registro en la tabla `pedidos`.
+
+Esto demuestra que la operación no es atómica y que el pedido se persiste parcialmente antes de completar correctamente el checkout.
+
+### Pedido incompleto visto desde otra conexión
+
+El test `test_otra_conexion_ve_el_pedido_completo` verificó que un pedido guardado pueda consultarse completamente desde una segunda conexión a la misma base.
+
+El test encontró el pedido, pero la lista de ítems estaba vacía.
+
+Esto indica que los datos del pedido y sus ítems no quedan confirmados correctamente dentro de una única transacción.
+
+### Precio enviado por el cliente almacenado incorrectamente
+
+El test `test_precio_enviado_por_cliente_se_ignora` verificó que el precio unitario guardado corresponda siempre al catálogo.
+
+El resultado recuperado fue `1` en lugar de `24999.90`.
+
+Esto demuestra que `pedidos.py` permite que un precio enviado por el cliente termine persistido, incumpliendo la regla que exige utilizar siempre el precio oficial del catálogo.
