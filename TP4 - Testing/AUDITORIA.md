@@ -167,3 +167,34 @@ Se detectaron los siguientes problemas:
 
 7. **Falta de transacción única**
    La operación completa de guardar pedido, importes e ítems no está contenida en una única transacción atómica, por lo que pueden quedar datos inconsistentes ante una falla intermedia.
+
+
+## Auditoría funcional de `api.py`
+
+Se comparó `api.py` con las reglas HTTP definidas en R11.
+
+Se detectaron los siguientes problemas:
+
+1. **Manejo de JSON inválido**
+   El servidor no diferencia correctamente un cuerpo que no contiene JSON válido del resto de los errores de entrada, por lo que puede responder con un código o mensaje distinto al requerido por `JSON_INVALIDO`.
+
+2. **Validación incompleta de campos obligatorios**
+   No se valida de forma estricta la presencia y el tipo de `email`, `zona` y `carrito` antes de continuar con el procesamiento.
+
+3. **Validación de fecha**
+   Una fecha con formato incorrecto puede no transformarse en el error controlado `FECHA_INVALIDA` con status 400 como exige la especificación.
+
+4. **Mapeo de errores de checkout**
+   Los `CheckoutError` deben responder con status 422 preservando su código original. La implementación no garantiza correctamente este comportamiento para todos los casos.
+
+5. **Pedido inexistente**
+   La consulta de un id inexistente debe devolver status 404 con código `PEDIDO_INEXISTENTE`. La implementación no cumple de forma consistente este contrato.
+
+6. **Ruta inexistente**
+   Una ruta que no existe debe responder status 404 con código `RUTA_INEXISTENTE`, en lugar de utilizar una respuesta genérica del servidor.
+
+7. **Formato de los importes**
+   La especificación exige que `subtotal`, `descuento`, `envio` y `total` se envíen en el JSON como texto. La implementación puede devolverlos como valores numéricos.
+
+8. **Errores controlados con status 500**
+   Los errores contemplados por la especificación nunca deberían provocar un status 500. La implementación actual contiene caminos de ejecución que pueden terminar como errores internos del servidor en vez de respuestas controladas.
