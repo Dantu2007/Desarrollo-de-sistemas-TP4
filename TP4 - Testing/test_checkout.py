@@ -77,3 +77,13 @@ def test_cupon_egresados_aplica_15_por_ciento():
     )
 
     assert descuento == Decimal("1500.00")
+
+def test_cupon_egresados_valido_en_fecha_de_vencimiento():
+    descuento = calcular_descuento(
+        Decimal("10000.00"),
+        1,
+        "EGRESADOS2026",
+        date(2026, 11, 30),
+    )
+
+    assert descuento == Decimal("1500.00")

@@ -1,5 +1,7 @@
 ## Auditoría de los tests provistos por la IA
 
+## Sección 1 — Tests de la IA
+
 Se ejecutó mutation testing sobre `test_checkout_ia.py` mediante el comando:
 
 `python mutar.py --tests test_checkout_ia.py`
@@ -78,6 +80,7 @@ Comprueba que un carrito vacío produzca el error esperado y valida una regla de
 **Clasificación:** útil.  
 Comprueba que un producto fuera del catálogo produzca el error correspondiente, aunque no evalúa otros casos relacionados con catálogo y precios.
 
+## Sección 2 — Hallazgos
 
 ## Auditoría funcional de `checkout.py`
 
@@ -293,3 +296,15 @@ Al ejecutar:
 el test falló con un `TypeError` porque el cálculo intenta multiplicar un valor `Decimal` por un `float`.
 
 La especificación exige que todos los importes monetarios se manejen utilizando `Decimal`, por lo que los porcentajes de los cupones también deben ser compatibles con ese tipo.
+
+## Falla detectada — R6: fecha de vencimiento inclusiva
+
+Se agregó un test para verificar que el cupón `EGRESADOS2026` sea válido el día 30/11/2026, ya que la especificación establece esa fecha como último día de vigencia inclusive.
+
+Al ejecutar:
+
+`python -m pytest -q test_checkout.py::test_cupon_egresados_valido_en_fecha_de_vencimiento`
+
+el test falló con el error `CUPON_VENCIDO`.
+
+La causa es que la implementación utiliza una comparación estricta que exige que la fecha sea anterior al vencimiento, excluyendo incorrectamente el propio día 30/11/2026.
